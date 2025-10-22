@@ -1,0 +1,159 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Green/Teal Palette from user image */
+    /* Light theme bases */
+    --background: 0 0% 100%; /* white */
+    --foreground: 210 15% 10%; /* near-black for readability */
+    --card: 0 0% 100%;
+    --card-foreground: 210 15% 10%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 210 15% 10%;
+    /* Primary (deep teal ~ #126171) */
+    --primary: 191 72% 26%;
+    --primary-foreground: 0 0% 100%;
+    /* Secondary (mint green ~ #69C5A0) */
+    --secondary: 156 45% 59%;
+    --secondary-foreground: 0 0% 12%;
+    /* Muted surfaces (very light mint ~ #C5FDD3) */
+    --muted: 144 90% 89%;
+    --muted-foreground: 160 12% 30%;
+    /* Accent (teal ~ #288D8A) */
+    --accent: 178 55% 36%;
+    --accent-foreground: 0 0% 100%;
+    /* Destructive keep standard red */
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    /* Borders/inputs (soft mint mid ~ #94E1B4) */
+    --border: 144 56% 73%;
+    --input: 144 56% 73%;
+    /* Focus ring use primary */
+    --ring: 191 72% 26%;
+    --radius: 1.5rem;
+  }
+
+  .dark {
+    /* Dark surfaces using deep teal/navy ~ #033854 */
+    --background: 199 93% 12%;
+    --foreground: 0 0% 96%;
+    --card: 197 78% 10%;
+    --card-foreground: 0 0% 96%;
+    --popover: 197 78% 10%;
+    --popover-foreground: 0 0% 96%;
+    /* Primary remains deep teal */
+    --primary: 191 72% 26%;
+    --primary-foreground: 0 0% 100%;
+    /* Secondary shifts to calmer green ~ #45A994 */
+    --secondary: 168 42% 47%;
+    --secondary-foreground: 0 0% 12%;
+    /* Muted darker teal ~ #126171 at low opacity */
+    --muted: 191 30% 20%;
+    --muted-foreground: 160 12% 75%;
+    /* Accent ~ #288D8A */
+    --accent: 178 55% 36%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 65% 40%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 191 25% 22%;
+    --input: 191 25% 22%;
+    --ring: 191 72% 26%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Montserrat', system-ui, -apple-system, sans-serif;
+  }
+}
+
+@layer components {
+  /* Modern Card Styles */
+  .card-modern {
+    @apply bg-card rounded-3xl shadow-lg hover:shadow-xl transition-all duration-300 border border-border/50;
+  }
+  
+  /* Glassmorphism Effect */
+  .glass {
+    @apply bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl backdrop-saturate-150;
+  }
+  
+  /* Gradient Backgrounds */
+  .gradient-primary {
+    @apply bg-gradient-to-br from-primary via-primary/90 to-primary/80;
+  }
+  
+  .gradient-secondary {
+    @apply bg-gradient-to-br from-secondary via-secondary/90 to-secondary/80;
+  }
+  
+  /* Modern Button Styles */
+  .btn-modern {
+    @apply px-6 py-3 rounded-2xl font-semibold transition-all duration-300 transform hover:scale-105 active:scale-95;
+  }
+  
+  /* Smooth Animations */
+  .animate-fade-in {
+    animation: fadeIn 0.5s ease-in-out;
+  }
+  
+  .animate-slide-up {
+    animation: slideUp 0.4s ease-out;
+  }
+  
+  .animate-scale-in {
+    animation: scaleIn 0.3s ease-out;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { 
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to { 
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scaleIn {
+  from { 
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to { 
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-muted/20 rounded-full;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-primary/30 rounded-full hover:bg-primary/50 transition-colors;
+}
