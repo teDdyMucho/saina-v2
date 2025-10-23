@@ -4,7 +4,7 @@ interface AttendanceEvent {
   id: string
   type: 'clock_in' | 'clock_out' | 'break_start' | 'break_end'
   timestamp: Date
-  location?: { lat: number; lng: number }
+  location?: { lat: number; lng: number; address?: string }
 }
 
 interface BreakPeriod {
@@ -17,7 +17,7 @@ interface AttendanceState {
   isOnBreak: boolean
   breakPeriods: BreakPeriod[]
   currentBreakStart: Date | null
-  clockIn: (location?: { lat: number; lng: number }) => void
+  clockIn: (location?: { lat: number; lng: number; address?: string }) => void
   clockOut: () => void
   startBreak: () => void
   endBreak: () => void
@@ -140,3 +140,4 @@ export const useAttendanceStore = create<AttendanceState>((set, get) => ({
     }
   })(),
 }))
+

@@ -91,7 +91,34 @@ export default function SelfieCapture() {
       try {
         const r = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${c.lat}&longitude=${c.lng}&localityLanguage=en`)
         const d = await r.json()
-        setPlaceName(composePlaceName(d))
+        let composed = composePlaceName(d)
+        // Try OSM Nominatim as a fallback to get street if missing
+        try {
+          const nomiRes = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${c.lat}&lon=${c.lng}&addressdetails=1`)
+          const nomi = await nomiRes.json()
+          const a = nomi?.address || {}
+          const house = a.house_number || a.house_name || ''
+          const road = a.road || a.residential || a.path || a.pedestrian || a.footway || ''
+          const barangay = a.suburb || a.neighbourhood || a.village || a.hamlet || a.quarter || a.district || ''
+          const city = a.city || a.town || a.municipality || a.county || ''
+          const province = a.state || a.province || ''
+          const country = a.country || ''
+          const street = [house, road].filter(Boolean).join(' ').trim()
+          const parts: string[] = []
+          if (street) parts.push(street)
+          else if (barangay) parts.push(barangay)
+          if (city) parts.push(city)
+          if (province) parts.push(province)
+          if (country) parts.push(country)
+          const human = parts.join(', ')
+          const title = (s: string) => s.replace(/\b([a-z])(\w*)/gi, (m, a, b) => `${String(a).toUpperCase()}${b.toLowerCase()}`)
+          if (human) {
+            // Prefer Nominatim result if it has a street or barangay more specific than the existing composed value
+            const preferNominatim = Boolean(street) || (barangay && (!composed || /^\w+,\s*\w+\s*,\s*\w+/.test(human)))
+            if (preferNominatim) composed = title(human)
+          }
+        } catch {}
+        setPlaceName(composed)
       } catch {}
       setLocLoading(false)
       return c
@@ -163,32 +190,57 @@ export default function SelfieCapture() {
     const findAdmin = (re: RegExp) => admin.find((x: any) => re.test(((x?.description || '') + ' ' + (x?.name || '')).toLowerCase()))?.name
 
     // Street and house number (if available)
-    const road = getByDesc(info, /road|street|route|highway/)
-    const houseNumber = getByDesc(info, /house\s*number|address/i)
+    const road = getByDesc(info, /(road|street|st\b|route|highway|hwy|drive|dr\b|avenue|ave\b|blvd|lane|ln\b|way|circle|cir\b|court|ct\b)/i)
+    const houseNumber = getByDesc(info, /(house\s*number|address|addr(ess)?\s*line\s*1?)/i)
 
     // City / locality
     const city = d?.locality || d?.city || findAdmin(/city|municipality|town/)
 
     // Province / state and 2-letter code when available
     const principal = d?.principalSubdivision as string | undefined
+    const countryCode = (d?.countryCode || '').toUpperCase()
     let province = principal || findAdmin(/province|state/)
     if (province && /region/i.test(province)) {
       const provFromAdmin = findAdmin(/province|state/)
       if (provFromAdmin) province = provFromAdmin
     }
-    const provCodeRaw = d?.principalSubdivisionCode as string | undefined // e.g., US-CA
-    const provCode = provCodeRaw ? provCodeRaw.split('-').pop() : undefined
+    const provCodeRaw = d?.principalSubdivisionCode as string | undefined // e.g., US-CA, PH-03
+    let provCode = provCodeRaw ? provCodeRaw.split('-').pop() : undefined
+    // Use province code only for US/CA; otherwise prefer the full province/state name
+    if (!['US', 'CA'].includes(countryCode)) {
+      provCode = undefined
+    }
 
     // Country
     let country = (d?.countryName || '').replace(/\s*\(the\)\s*/i, '').trim()
 
+    // If no street, try smaller localities like barangay/suburb/neighbourhood
+    const barangayOrSuburb = getByDesc(info, /(barangay|suburb|neighbourhood|neighborhood|village|hamlet|district|quarter)/i)
+
+    // Sanitize helper to avoid continent names leaking into address
+    const sanitize = (s?: string) => {
+      if (!s) return undefined
+      const v = String(s).trim()
+      if (/^(asia|europe|africa|north\s+america|south\s+america|antarctica|oceania|australia)$/i.test(v)) return undefined
+      return v
+    }
+
+    const cleanStreet = sanitize([houseNumber, road].filter(Boolean).join(' '))
+    const cleanBarangay = sanitize(barangayOrSuburb)
+    const cleanCity = sanitize(city)
+    const cleanProvince = sanitize(provCode || province)
+    const cleanCountry = sanitize(country) || country
+
     // Build parts with desired formatting
     const parts: string[] = []
-    const street = [houseNumber, road].filter(Boolean).join(' ')
-    if (street) parts.push(street)
-    if (city) parts.push(city)
-    if (provCode || province) parts.push(provCode || province)
-    if (country) parts.push(country)
+    if (cleanStreet) {
+      parts.push(cleanStreet)
+    } else if (cleanBarangay) {
+      parts.push(cleanBarangay)
+    }
+    if (cleanCity) parts.push(cleanCity)
+    if (cleanProvince) parts.push(cleanProvince)
+    if (cleanCountry) parts.push(cleanCountry)
 
     const human = parts.join(', ')
 
@@ -361,6 +413,7 @@ export default function SelfieCapture() {
           try { clockOutStore() } catch {}
           localStorage.removeItem('selfieDataUrl')
           localStorage.removeItem('lastGeo')
+          localStorage.removeItem('lastAddress')
           localStorage.removeItem('pendingAction')
           if (window.opener) {
             window.close()
@@ -379,6 +432,7 @@ export default function SelfieCapture() {
       // For other actions (clockIn, startBreak, endBreak), proceed normally
       if (captured) localStorage.setItem('selfieDataUrl', captured)
       localStorage.setItem('lastGeo', JSON.stringify(current))
+      if (nameToSend) localStorage.setItem('lastAddress', nameToSend)
       
       // Store clockIn_id for clock-in action
       if (clockInId) {
@@ -407,6 +461,7 @@ export default function SelfieCapture() {
     // Default behavior if no explicit 'Done' received (for non-clockOut actions)
     if (captured) localStorage.setItem('selfieDataUrl', captured)
     localStorage.setItem('lastGeo', JSON.stringify(current))
+    if (nameToSend) localStorage.setItem('lastAddress', nameToSend)
     
     // Store clockIn_id for clock-in action
     if (clockInId) {

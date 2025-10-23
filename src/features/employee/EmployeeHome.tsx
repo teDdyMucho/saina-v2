@@ -249,6 +249,7 @@ export function EmployeeHome() {
     const checkAndProcess = () => {
       const selfie = localStorage.getItem('selfieDataUrl')
       const geo = localStorage.getItem('lastGeo')
+      const lastAddress = localStorage.getItem('lastAddress')
       const pendingAction = (localStorage.getItem('pendingAction') as any) as 'clockIn' | 'startBreak' | 'endBreak' | 'clockOut' | null
       if (!selfie || !geo || !pendingAction) return
 
@@ -277,7 +278,7 @@ export function EmployeeHome() {
 
         // Apply local state change based on action (proceed even if outside geofence)
         if (pendingAction === 'clockIn') {
-          clockIn({ lat, lng })
+          clockIn({ lat, lng, address: lastAddress || undefined })
           try { 
             localStorage.removeItem('breakCompleted')
             // Load clockIn_id from localStorage if it was set by SelfieCapture
@@ -296,6 +297,7 @@ export function EmployeeHome() {
           try { 
             localStorage.removeItem('breakCompleted')
             localStorage.removeItem('currentClockInId')
+            localStorage.removeItem('lastAddress')
             setCurrentClockInId(null)
           } catch {}
         }
@@ -320,11 +322,13 @@ export function EmployeeHome() {
         // Clear the cached items
         localStorage.removeItem('selfieDataUrl')
         localStorage.removeItem('lastGeo')
+        localStorage.removeItem('lastAddress')
         localStorage.removeItem('pendingAction')
       } catch (e) {
         // ignore parse errors
         localStorage.removeItem('selfieDataUrl')
         localStorage.removeItem('lastGeo')
+        localStorage.removeItem('lastAddress')
         localStorage.removeItem('pendingAction')
       }
     }
