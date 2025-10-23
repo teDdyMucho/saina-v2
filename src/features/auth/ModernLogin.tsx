@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { ToggleGroup } from '@/components/ui/toggle-group'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Toast, ToastContainer } from '@/components/ui/toast'
+import { LoadingSpinner } from '@/components/LoadingSpinner'
 import { 
   Loader2,
   Lock,
@@ -206,6 +207,15 @@ export default function ModernLogin({ onAuth }: ModernLoginProps) {
 
   return (
     <div className="min-h-screen w-full relative overflow-hidden bg-gradient-to-br from-muted/50 via-secondary/20 to-primary/10 dark:from-background dark:via-muted/20 dark:to-background">
+      {/* Loading overlay */}
+      {loading && (
+        <LoadingSpinner 
+          message="" 
+          fullScreen 
+          size="lg" 
+        />
+      )}
+
       {/* Animated background pattern */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,_var(--tw-gradient-stops))] from-secondary/30 via-transparent to-transparent dark:from-primary/20" />
       

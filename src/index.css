@@ -157,3 +157,15 @@
 ::-webkit-scrollbar-thumb {
   @apply bg-primary/30 rounded-full hover:bg-primary/50 transition-colors;
 }
+
+/* Loading spinner responsive adjustments */
+@media (max-width: 320px) {
+  .loading-spinner-container {
+    padding: 0.75rem;
+  }
+  
+  .loading-spinner-message {
+    font-size: 0.75rem;
+    margin-top: 1rem;
+  }
+}

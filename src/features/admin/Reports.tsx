@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { Download, Filter, Calendar, Loader2 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useNavigate } from 'react-router-dom'
+import { LoadingSpinner } from '@/components/LoadingSpinner'
 
 type ReportRow = {
   id: string
@@ -428,14 +429,13 @@ export function Reports() {
 
       {/* Loading state */}
       {loading && (
-        <Card className="rounded-xl md:rounded-2xl">
-          <CardContent className="py-16 flex items-center justify-center">
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <Loader2 className="w-5 h-5 animate-spin" />
-              <span>Loading report…</span>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="fixed inset-0 flex items-center justify-center bg-background z-10">
+          <LoadingSpinner 
+            message="" 
+            fullScreen={false}
+            size="lg" 
+          />
+        </div>
       )}
 
       {/* Summary Cards */}

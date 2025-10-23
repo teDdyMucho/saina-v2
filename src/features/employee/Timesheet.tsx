@@ -5,6 +5,7 @@ import { Calendar, Clock, Loader2, MapPin, Image as ImageIcon, X } from 'lucide-
 import { formatDuration } from '@/lib/utils'
 import { supabase } from '@/lib/supabase'
 import { useAuthStore } from '@/stores/useAuthStore'
+import { LoadingSpinner } from '@/components/LoadingSpinner'
 
 interface TimesheetEntry {
   id: string
@@ -266,8 +267,12 @@ export function Timesheet() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      <div className="fixed inset-0 flex items-center justify-center bg-background z-10">
+        <LoadingSpinner 
+          message="" 
+          fullScreen={false}
+          size="lg" 
+        />
       </div>
     )
   }

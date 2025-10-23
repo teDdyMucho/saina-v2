@@ -4,6 +4,7 @@ import { useAuthStore } from '@/stores/useAuthStore'
 import { useAttendanceStore } from '@/stores/useAttendanceStore'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { LoadingSpinner } from '@/components/LoadingSpinner'
 
 export default function SelfieCapture() {
   const videoRef = useRef<HTMLVideoElement | null>(null)
@@ -478,6 +479,24 @@ export default function SelfieCapture() {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-background">
+      {/* Loading overlay for geolocation */}
+      {locLoading && (
+        <LoadingSpinner 
+          message="" 
+          fullScreen 
+          size="lg" 
+        />
+      )}
+      
+      {/* Loading overlay for webhook submission */}
+      {sending && (
+        <LoadingSpinner 
+          message="" 
+          fullScreen 
+          size="lg" 
+        />
+      )}
+
       <Card className="w-full max-w-xl">
         <CardHeader>
           <CardTitle>{actionLabel} - Selfie & Location</CardTitle>

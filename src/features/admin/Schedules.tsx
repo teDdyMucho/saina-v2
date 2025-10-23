@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Calendar, Clock, Users, Pencil, Trash } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
+import { LoadingSpinner } from '@/components/LoadingSpinner'
 
 type ShiftTemplate = {
   id: string
@@ -127,6 +128,7 @@ export function Schedules() {
     id: string
     employeeName: string
     shiftName: string
+    projectName: string
     startDate: string
     endDate?: string | null
     recurrence?: string
@@ -147,6 +149,7 @@ export function Schedules() {
   const [employees, setEmployees] = useState<Array<{ id: number | string; name: string; user_name?: string }>>([])
   const [loadingEmployees, setLoadingEmployees] = useState(false)
   const [employeesError, setEmployeesError] = useState<string | null>(null)
+  const [initialLoading, setInitialLoading] = useState(true)
 
   useEffect(() => {
     const load = async () => {
@@ -159,6 +162,7 @@ export function Schedules() {
         setEmployees((data || []).map((r) => ({ id: r.id as any, name: (r as any).name || 'Unnamed', user_name: (r as any).user_name })))
       }
       setLoadingEmployees(false)
+      setInitialLoading(false)
     }
     load()
   }, [])
@@ -166,7 +170,7 @@ export function Schedules() {
   const loadSchedules = async (): Promise<void> => {
     const { data, error } = await supabase
       .from('schedule')
-      .select('id, employee_name, shift_name, start_date, end_date, created_at')
+      .select('id, employee_name, shift_name, project, start_date, end_date, created_at')
       .order('created_at', { ascending: false })
 
     if (!error && data) {
@@ -177,6 +181,7 @@ export function Schedules() {
             id: String(row.id),
             employeeName: row.employee_name as string,
             shiftName: row.shift_name as string,
+            projectName: row.project as string,
             startDate: row.start_date as string,
             endDate: (row.end_date as string) || null,
             recurrence: 'weekly',
@@ -222,15 +227,13 @@ export function Schedules() {
   }
 
   const deleteAssigned = async (id: string) => {
-    // Optimistic UI removal
-    const prev = assigned
-    setAssigned((list) => list.filter((x) => x.id !== id))
     const { error } = await supabase.from('schedule').delete().eq('id', id)
     if (error) {
-      // rollback on failure
-      setAssigned(prev)
       console.error('Failed to delete schedule:', error)
       alert('Failed to delete. Please try again.')
+    } else {
+      // Reload data to show real-time updates
+      await loadSchedules()
     }
   }
 
@@ -495,9 +498,11 @@ export function Schedules() {
       } catch {}
       if (!editingAssignedId) {
         setSubmitMsg('Schedule assigned')
-        await loadSchedules()
+      } else {
+        setSubmitMsg('Schedule updated')
       }
-      // For edits, just close—n8n will handle persistence and any UI refresh can be manual
+      // Reload data to show real-time updates for both create and edit
+      await loadSchedules()
       setAssign({ employeeId: '', projectName: '', shiftId: '', startDate: '', endDate: '' })
       setEditingAssignedId(null)
       setIsFormOpen(false)
@@ -511,6 +516,18 @@ export function Schedules() {
 
   // Distinct list of projects from templates
   const projectOptions = Array.from(new Set(shiftTemplates.map((t) => t.projectName || '').filter(Boolean)))
+
+  if (initialLoading) {
+    return (
+      <div className="fixed inset-0 flex items-center justify-center bg-background z-10">
+        <LoadingSpinner 
+          message="" 
+          fullScreen={false}
+          size="lg" 
+        />
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">
@@ -629,6 +646,13 @@ export function Schedules() {
                       <Users className="w-4 h-4 text-muted-foreground" />
                       <span className="font-semibold">{s.employeeName}</span>
                     </div>
+                    {s.projectName && (
+                      <div className="flex items-center gap-2 text-sm">
+                        <Badge variant="secondary" className="text-xs">
+                          {s.projectName}
+                        </Badge>
+                      </div>
+                    )}
                     <div className="flex items-center gap-4 text-sm text-muted-foreground">
                       <span>
                         {s.shiftName}

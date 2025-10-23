@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input'
 import { MapPin, Image as ImageIcon, X, Loader2 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { formatDuration } from '@/lib/utils'
+import { LoadingSpinner } from '@/components/LoadingSpinner'
 
 export default function ReportUserDetail() {
   const { userName } = useParams()
@@ -124,15 +125,12 @@ export default function ReportUserDetail() {
   }
 
   if (loading) return (
-    <div className="p-6">
-      <Card>
-        <CardContent className="py-16 flex items-center justify-center">
-          <div className="flex items-center gap-2 text-muted-foreground">
-            <Loader2 className="w-5 h-5 animate-spin" />
-            <span>Loading user data…</span>
-          </div>
-        </CardContent>
-      </Card>
+    <div className="fixed inset-0 flex items-center justify-center bg-background z-10">
+      <LoadingSpinner 
+        message="" 
+        fullScreen={false}
+        size="lg" 
+      />
     </div>
   )
   if (error) return <div className="p-6 text-red-600">{error}</div>

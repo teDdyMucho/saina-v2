@@ -10,6 +10,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { supabase } from '@/lib/supabase'
 import { useAuthStore } from '@/stores/useAuthStore'
 import { useNavigate } from 'react-router-dom'
+import { LoadingSpinner } from '@/components/LoadingSpinner'
 
 export function EmployeeHome() {
   const { currentSession, isOnBreak, clockIn, clockOut, startBreak, endBreak, getTotalBreakTime } = useAttendanceStore()
@@ -390,6 +391,14 @@ export function EmployeeHome() {
       animate="visible"
       className="space-y-6"
     >
+      {/* Loading overlay for clock actions */}
+      {isCapturing && (
+        <LoadingSpinner 
+          message="" 
+          fullScreen 
+          size="lg" 
+        />
+      )}
       {/* Row A: Current Time and Today's Shift */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch" aria-live="polite">
         <motion.div variants={itemVariants} className="h-full">

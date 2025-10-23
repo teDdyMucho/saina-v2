@@ -15,6 +15,7 @@ import {
   Loader2
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
+import { LoadingSpinner } from '@/components/LoadingSpinner'
 
 // Types
 interface Employee {
@@ -225,13 +226,12 @@ export function AdminDashboardPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-        >
-          <Loader2 className="w-8 h-8 text-primary" />
-        </motion.div>
+      <div className="fixed inset-0 flex items-center justify-center bg-background z-10">
+        <LoadingSpinner 
+          message="" 
+          fullScreen={false}
+          size="lg" 
+        />
       </div>
     )
   }
